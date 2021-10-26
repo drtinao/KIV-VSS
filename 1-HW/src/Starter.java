@@ -39,6 +39,16 @@ public class Starter {
      * @param countToPrint prints first X nums with highest occurance from histogram
      */
     public static void printResults(StatisticsCalc calc, GeometricDistribution geomDistrExpected, int countToPrint){
+        double histogramMean = calc.retrieveMean();
+        double histogramVariance = calc.retrieveVariance(histogramMean);
+        double expectedMean = geomDistrExpected.calcExpectMean();
+        double expectedVariance = geomDistrExpected.calcExpectVariance();
+
+        System.out.println("E_teorie=" + expectedMean);
+        System.out.println("D_teorie=" + expectedVariance);
+        System.out.println("E_vypocet=" + histogramMean);
+        System.out.println("D_vypocet=" + histogramVariance);
+
         HashMap sortedHistogram = calc.retrieveSortedHistogram();
         List<Integer>  sortHistVals = new ArrayList<Integer>(sortedHistogram.keySet());
         Collections.reverse(sortHistVals);

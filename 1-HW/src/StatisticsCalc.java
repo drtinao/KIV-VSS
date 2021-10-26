@@ -29,10 +29,10 @@ public class StatisticsCalc {
 //            }else{
 //                generated = Math.ceil(Math.log(1 - ranValUni) / Math.log(1 - p));
 //            }
-            int generatedNum = (int) Math.ceil(Math.log(1 - ranValUni) / Math.log(1 - p));
-            System.out.println("Generated " + generatedNum);
+            int generatedNum = (int) Math.ceil(Math.log(1 - ranValUni) / Math.log(1 - p)) - 1;
+            //System.out.println("Generated " + generatedNum);
             //long u = Math.round(Double.MAX_VALUE * randomValu); //map random num to function range - function is defined for positive whole numbers
-
+            calculatedMean += generatedNum;
             //add generated val to histogram
             if(histogram.containsKey(generatedNum)){ //generated val already present in histogram, inc count
                 histogram.put(generatedNum, histogram.get(generatedNum) + 1);
@@ -71,16 +71,24 @@ public class StatisticsCalc {
      * @return calculated mean
      */
     public double retrieveMean(){
-        double mean = 0;
-        return 0;
+        double valuesSum = 0;
+        for (Integer key : histogram.keySet()) { //get sum of all values in histogram
+            valuesSum += key * histogram.get(key);
+        }
+
+        return (valuesSum / numsToGenCount);
     }
 
     /**
      * Calculates variance (D, "rozptyl") and returns its value.
      * @return calculated variance
      */
-    public double retrieveVariance(){
+    public double retrieveVariance(double mean){
         double variance = 0;
-        return 0;
+        for (Integer key : histogram.keySet()) { //get sum of all values in histogram
+            variance += Math.pow(key - mean, 2) * ((double)histogram.get(key) / numsToGenCount);
+        }
+
+        return variance;
     }
 }
