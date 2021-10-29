@@ -1,12 +1,13 @@
+/**
+ * Class is used for calculating expected mean + variance of geometric distribution.
+ */
 public class GeometricDistribution {
-    private int numsToGen; //count of numbers which should be generated
-
     // PARAMS REGARDING TO GEOMETRIC DISTRIB - START
     private double p; //probability of success - value <0, 1>
     // PARAMS REGARDING TO GEOMETRIC DISTRIB - END
 
     /**
-     * Constructor takes params which are characteristic to geometric distribution - p and x.
+     * Constructor takes params which are characteristic to geometric distribution - p.
      * @param p probability of success - value <0, 1>
      */
     public GeometricDistribution(double p){

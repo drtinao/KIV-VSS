@@ -1,20 +1,41 @@
 import java.util.*;
 
+/**
+ * Class serves as a starting point of the application and contains methods for checking args validity + executing calculations.
+ */
 public class Starter {
-    private static final int HISTOGRAM_FIRST_X_NUMS = 10; //
-
+    private static int HISTOGRAM_FIRST_X_NUMS = 5; //how many most relevant values from histogram should be printed
+    private static int MAX_STARS_COUNT = 10; //how many stars should be used for max occ key
+    // demo vals - START
     private static final int DEMO_COUNT_1 = 1000000;
     private static final int DEMO_COUNT_2 = 100000;
     private static final double DEMO_P_1 = 0.4;
     private static final double DEMO_P_2 = 0.6;
+    // demo vals - END
 
+    /**
+     * Starting point of app, check args, run calculations.
+     * @param args arguments entered by user
+     */
     public static void main(String[] args){
-        if(checkParamsValidRegRun(args)){ //params for regular run
-            System.out.println("Parameters entered - regular mode - printing vals - START");
+        if(checkParamsValidRegRunNoExtraPar(args)){ //params for regular run with NO extra params
+            System.out.println("Parameters entered - regular mode, NO optional params - printing vals - START");
             int count = Integer.parseInt(args[0]);
             double p = Double.parseDouble(args[1]);
             System.out.println("Count is: " + count + ", p is: " + p);
-            System.out.println("Parameters entered - regular mode - printing vals - END");
+            System.out.println("Parameters entered - regular mode, NO optional params - printing vals - END");
+            performRun(count, p);
+        }else if(checkParamsValidRegRunExtraPar(args)){ //params for regular run, extra params entered
+            System.out.println("Parameters entered - regular mode, optional params present - printing vals - START");
+            int count = Integer.parseInt(args[0]);
+            double p = Double.parseDouble(args[1]);
+            String[] splittedExtraArgs = args[2].split(";");
+            int histogramNums = Integer.parseInt(splittedExtraArgs[0]); //represents HISTOGRAM_FIRST_X_NUMS
+            int starsCount = Integer.parseInt(splittedExtraArgs[1]); //represents MAX_STARS_COUNT
+            System.out.println("Count is: " + count + ", p is: " + p + ", max histogram size is: " + histogramNums + ", max stars count is: " + starsCount);
+            System.out.println("Parameters entered - regular mode, optional params present - printing vals - END");
+            HISTOGRAM_FIRST_X_NUMS = histogramNums;
+            MAX_STARS_COUNT = starsCount;
             performRun(count, p);
         }else if(checkParamsValidDemoRun(args)){ //no params -> run demo
             System.out.println("Parameters NOT entered - DEMO mode - printing vals1 - START");
@@ -52,9 +73,28 @@ public class Starter {
         HashMap sortedHistogram = calc.retrieveSortedHistogram();
         List<Integer>  sortHistVals = new ArrayList<Integer>(sortedHistogram.keySet());
         Collections.reverse(sortHistVals);
-        for(Integer strKey : sortHistVals){
-            System.out.println("Key : "  + strKey + "\t\t"
-                    + "Value : "  + sortedHistogram.get(strKey));
+
+        ArrayList<Integer> printedKeys = new ArrayList<>();
+        ArrayList<Integer> printedValues = new ArrayList<>();
+        int printCounter = 0; //print max HISTOGRAM_FIRST_X_NUMS values
+        for(Integer key : sortHistVals){
+            if(printCounter < HISTOGRAM_FIRST_X_NUMS){
+                printedKeys.add(key);
+                printedValues.add((Integer) sortedHistogram.get(key));
+                printCounter++;
+            }else{
+                break;
+            }
+        }
+
+        //first value is max, -> adapt other values (value / max) * max stars count
+        for(int i = 0; i < printedKeys.size(); i++){
+            int starsCount = (int)(((double) printedValues.get(i) / printedValues.get(0)) * MAX_STARS_COUNT);
+            System.out.print(printedKeys.get(i) + ":");
+            for(int j = 0; j < starsCount; j++){ //print stars according to occ
+                System.out.print("*");
+            }
+            System.out.print("(exact num: " + printedValues.get(i)+ ")\n");
         }
     }
 
@@ -63,11 +103,33 @@ public class Starter {
      * @param args arguments given by user
      * @return true if args are valid for regular run, else false
      */
-    public static boolean checkParamsValidRegRun(String[] args){
+    public static boolean checkParamsValidRegRunNoExtraPar(String[] args){
         if(args.length == 2){ //expect count, p and x
             try{
-                double count = Double.parseDouble(args[0]);
-                double p = Double.parseDouble(args[1]);
+                Integer.parseInt(args[0]);
+                Double.parseDouble(args[1]);
+                return true;
+            }catch(NumberFormatException nfe){
+                return false;
+            }
+        }else{ //count args not ok
+            return false;
+        }
+    }
+
+    /**
+     * Returns true if given parameters are valid for regular run with extra params  (ie. HISTOGRAM_FIRST_X_NUMS + MAX_STARS_COUNT specified), else false.
+     * @param args arguments given by user
+     * @return true if args are valid for regular run, else false
+     */
+    public static boolean checkParamsValidRegRunExtraPar(String[] args){
+        if(args.length == 3){ //HISTOGRAM_FIRST_X_NUMS + MAX_STARS_COUNT specified
+            try{
+                Integer.parseInt(args[0]);
+                Double.parseDouble(args[1]);
+                String[] splittedExtraArgs = args[2].split(";");
+                Integer.parseInt(splittedExtraArgs[0]); //represents HISTOGRAM_FIRST_X_NUMS
+                Integer.parseInt(splittedExtraArgs[1]); //represents MAX_STARS_COUNT
                 return true;
             }catch(NumberFormatException nfe){
                 return false;
@@ -91,7 +153,7 @@ public class Starter {
     }
 
     /**
-     * Starts program in regular mode - ie. values are entered by user (not generated).
+     * Starts calculations using given values.
      * @param count count of numbers which should be generated
      * @param p probability of success - value <0, 1>
      */
@@ -99,20 +161,5 @@ public class Starter {
         StatisticsCalc calc = new StatisticsCalc(count, p);
         GeometricDistribution geomDistrExpected = new GeometricDistribution(p);
         printResults(calc, geomDistrExpected, HISTOGRAM_FIRST_X_NUMS);
-    }
-
-    /**
-     * Prints calculated / expected mean + variance and histogram to console.
-     * @param histogram map for calc mean / invariance
-     * @param retrievedMean calculated mean (E, "stredni hodnota")
-     * @param retrievedVariance calculated variance (D, "rozptyl")
-     * @param expectedMean expected E
-     * @param expectedVariance expected D
-     */
-    public void printResults(HashMap<Double, Integer> histogram, double retrievedMean, double retrievedVariance, double expectedMean, double expectedVariance){
-        System.out.println("E_teorie=" + expectedMean);
-        System.out.println("D_teorie=" + expectedVariance);
-        System.out.println("E_vypocet=" + retrievedMean);
-        System.out.println("D_vypocet=" + retrievedVariance);
     }
 }

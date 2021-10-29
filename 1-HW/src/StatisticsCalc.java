@@ -1,5 +1,8 @@
 import java.util.*;
 
+/**
+ * Used for performing E, D calculations using histogram.
+ */
 public class StatisticsCalc {
     private int numsToGenCount; //count of numbers which should be generated
     private double p; //p probability of success - value <0, 1>
@@ -7,6 +10,11 @@ public class StatisticsCalc {
     private Random rn; //used for generating random numbers
     private HashMap<Integer, Integer> histogram; //represents histogram; key - generated value, val = number of occ
 
+    /**
+     * Constructor takes just count of nums to generate and probability of success.
+     * @param numsToGenCount count of numbers which should be generated
+     * @param p p probability of success - value <0, 1>
+     */
     public StatisticsCalc(int numsToGenCount, double p){
         this.numsToGenCount = numsToGenCount;
         this.p = p;
@@ -16,23 +24,13 @@ public class StatisticsCalc {
         performCalculations();
     }
 
-
+    /**
+     * Builds histogram which is then used for performing calculations of E and D.
+     */
     public void performCalculations(){
-        GeometricDistribution geomDist = new GeometricDistribution(p);
-
-        double calculatedMean = 0;
-
         for(int i = 0; i < numsToGenCount; i++){ //generated desired count of nums
             double ranValUni = rn.nextDouble(); //generate number <0, 1>
-//            if(ranValUni < p){
-//                generated = 0;
-//            }else{
-//                generated = Math.ceil(Math.log(1 - ranValUni) / Math.log(1 - p));
-//            }
             int generatedNum = (int) Math.ceil(Math.log(1 - ranValUni) / Math.log(1 - p)) - 1;
-            //System.out.println("Generated " + generatedNum);
-            //long u = Math.round(Double.MAX_VALUE * randomValu); //map random num to function range - function is defined for positive whole numbers
-            calculatedMean += generatedNum;
             //add generated val to histogram
             if(histogram.containsKey(generatedNum)){ //generated val already present in histogram, inc count
                 histogram.put(generatedNum, histogram.get(generatedNum) + 1);
@@ -40,9 +38,6 @@ public class StatisticsCalc {
                 histogram.put(generatedNum, 1);
             }
         }
-
-        double mean = geomDist.calcExpectMean();
-        System.out.println("Expected mean is: " + mean + ", calc is: " + (calculatedMean / numsToGenCount));
     }
 
     /**
