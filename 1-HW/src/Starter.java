@@ -18,6 +18,7 @@ public class Starter {
      * @param args arguments entered by user
      */
     public static void main(String[] args){
+        System.out.println("Args count is " + args.length);
         if(checkParamsValidRegRunNoExtraPar(args)){ //params for regular run with NO extra params
             System.out.println("Parameters entered - regular mode, NO optional params - printing vals - START");
             int count = Integer.parseInt(args[0]);
