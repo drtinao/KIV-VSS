@@ -1,3 +1,10 @@
+import org.jfree.chart.ChartPanel;
+import org.jfree.data.general.SeriesException;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYDataset;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,6 +14,8 @@ import java.awt.*;
 public class GUI {
     /* constants regarding to dashboard window - START */
     private static final String DASHBOARD_FRAME_TITLE = "Dashboard"; //title of the dashboard window
+    private static final String GRAPH_REAL_PRICE = "real price history"; //title of first displayed chart - price history
+    private static final String GRAPH_PREDICT_PRICE = "predicted price"; //title of sec displayed chart - price according to pred model
     private static final int DASHBOARD_SIZE_WIDTH = 1024; //width of the dashboard window
     private static final int DASHBOARD_SIZE_HEIGHT = 768; //height of the dashboard window
     /* constants regarding to dashboard window - END */
@@ -14,9 +23,7 @@ public class GUI {
     public void showDashboard(){
         /* prepare Jlabels present in dashboard window - START */
         JLabel selCryptoL = new JLabel("cryptocurrency: ");
-        JLabel realPriceGraphL = new JLabel("real price graph: ");
         JLabel selPredModelL = new JLabel("prediction model: ");
-        JLabel predPriceGraphL = new JLabel("predicted price graph: ");
         /* prepare Jlabels present in dashboard window - END */
 
         /* prepare JComboBoxes present in dashboard - START */
@@ -47,19 +54,41 @@ public class GUI {
         JPanel mainP = new JPanel();
         mainP.setLayout(new BoxLayout(mainP, BoxLayout.PAGE_AXIS));
         mainP.add(selCryptoPanel); //panel with crypto name selection
-        mainP.add(realPriceGraphL);
+        mainP.add(new ChartPanel(null)); //allocate space for graph with real crypto prices
         mainP.add(selPredModelPanel); //panel with crypto pred. model selection
-        mainP.add(predPriceGraphL);
+        mainP.add(new ChartPanel(null)); //allocate space for graph with predicted crypto prices
         /* create main panel which consists of previously defined JPanels - END */
 
         /* create JFrame which will contain defined items - START */
-        JFrame zadaniHodnotFrame = new JFrame(DASHBOARD_FRAME_TITLE);
-        zadaniHodnotFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        zadaniHodnotFrame.add(mainP);
-        zadaniHodnotFrame.setSize(DASHBOARD_SIZE_WIDTH,DASHBOARD_SIZE_HEIGHT);
-        zadaniHodnotFrame.setResizable(false);
-        zadaniHodnotFrame.setLocationRelativeTo(null);
-        zadaniHodnotFrame.setVisible(true);
+        JFrame mainFrame = new JFrame(DASHBOARD_FRAME_TITLE);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.add(mainP);
+        mainFrame.setSize(DASHBOARD_SIZE_WIDTH,DASHBOARD_SIZE_HEIGHT);
+        mainFrame.setResizable(false);
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setVisible(true);
         /* create JFrame which will contain defined items - END */
+
+        CryptoDataRetriever cryptoData = new CryptoDataRetriever(SupportedCrypto.BITCOIN, SupportedCurrency.USD);
+        cryptoData.refreshHistoricalData();
+    }
+
+    private XYDataset createDataset( ) {
+        final TimeSeries series = new TimeSeries( "Random Data" );
+        Second current = new Second( );
+        double value = 100.0;
+
+        for (int i = 0; i < 4000; i++) {
+
+            try {
+                value = value + Math.random( ) - 0.5;
+                series.add(current, new Double( value ) );
+                current = ( Second ) current.next( );
+            } catch ( SeriesException e ) {
+                System.err.println("Error adding to series");
+            }
+        }
+
+        return new TimeSeriesCollection(series);
     }
 }
