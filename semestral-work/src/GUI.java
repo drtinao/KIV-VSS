@@ -7,6 +7,7 @@ import org.jfree.data.xy.XYDataset;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Class is responsible for managing GUI and presenting GUI components to user.
@@ -56,7 +57,15 @@ public class GUI {
         mainP.add(selCryptoPanel); //panel with crypto name selection
         mainP.add(new ChartPanel(null)); //allocate space for graph with real crypto prices
         mainP.add(selPredModelPanel); //panel with crypto pred. model selection
-        mainP.add(new ChartPanel(null)); //allocate space for graph with predicted crypto prices
+        //mainP.add(new ChartPanel(null)); //allocate space for graph with predicted crypto prices
+
+        CryptoDataRetriever cryptoData = new CryptoDataRetriever(SupportedCrypto.BITCOIN, SupportedCurrency.USD);
+        cryptoData.refreshHistoricalData();
+        ArrayList<Long> cryptoDates = cryptoData.getDates();
+        ArrayList<Double> cryptoPrices = cryptoData.getPrices();
+
+        GraphManager graph = new GraphManager(cryptoDates, cryptoPrices, "grafik");
+        mainP.add(new ChartPanel(graph.getGraph())); //allocate space for graph with predicted crypto prices
         /* create main panel which consists of previously defined JPanels - END */
 
         /* create JFrame which will contain defined items - START */
@@ -68,9 +77,6 @@ public class GUI {
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
         /* create JFrame which will contain defined items - END */
-
-        CryptoDataRetriever cryptoData = new CryptoDataRetriever(SupportedCrypto.BITCOIN, SupportedCurrency.USD);
-        cryptoData.refreshHistoricalData();
     }
 
     private XYDataset createDataset( ) {
