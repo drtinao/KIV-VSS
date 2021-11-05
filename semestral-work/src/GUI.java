@@ -7,6 +7,8 @@ import org.jfree.data.xy.XYDataset;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 /**
@@ -24,11 +26,13 @@ public class GUI {
     public void showDashboard(){
         /* prepare Jlabels present in dashboard window - START */
         JLabel selCryptoL = new JLabel("cryptocurrency: ");
+        JLabel selCurrencyL = new JLabel("currency: ");
         JLabel selPredModelL = new JLabel("prediction model: ");
         /* prepare Jlabels present in dashboard window - END */
 
         /* prepare JComboBoxes present in dashboard - START */
         JComboBox selCryptoCB = new JComboBox(SupportedCrypto.values());
+        JComboBox selCurrencyCB = new JComboBox(SupportedCurrency.values());
         JComboBox selPredModelCB = new JComboBox(SupportedPredMethods.values());
         /* prepare JComboBoxes present in dashboard - END */
 
@@ -42,6 +46,8 @@ public class GUI {
         selCryptoPanel.setLayout(new BoxLayout(selCryptoPanel, BoxLayout.LINE_AXIS));
         selCryptoPanel.add(selCryptoL);
         selCryptoPanel.add(selCryptoCB);
+        selCryptoPanel.add(selCurrencyL);
+        selCryptoPanel.add(selCurrencyCB);
         selCryptoPanel.add(selCryptoSubmit);
 
         JPanel selPredModelPanel = new JPanel();
@@ -55,18 +61,18 @@ public class GUI {
         JPanel mainP = new JPanel();
         mainP.setLayout(new BoxLayout(mainP, BoxLayout.PAGE_AXIS));
         mainP.add(selCryptoPanel); //panel with crypto name selection
-        mainP.add(new ChartPanel(null)); //allocate space for graph with real crypto prices
-        mainP.add(selPredModelPanel); //panel with crypto pred. model selection
-        //mainP.add(new ChartPanel(null)); //allocate space for graph with predicted crypto prices
 
         CryptoDataRetriever cryptoData = new CryptoDataRetriever(SupportedCrypto.BITCOIN, SupportedCurrency.USD);
         cryptoData.refreshHistoricalData();
         ArrayList<Long> cryptoDates = cryptoData.getDates();
         ArrayList<Double> cryptoPrices = cryptoData.getPrices();
-
-        GraphManager graph = new GraphManager(cryptoDates, cryptoPrices, "grafik");
-        mainP.add(new ChartPanel(graph.getGraph())); //allocate space for graph with predicted crypto prices
+        GraphManager graph = new GraphManager("grafik");
+        ChartPanel pricePanel = new ChartPanel(graph.getGraph());
+        mainP.add(pricePanel); //allocate space for graph with predicted crypto prices
+        mainP.add(selPredModelPanel); //panel with crypto pred. model selection
         /* create main panel which consists of previously defined JPanels - END */
+
+        prepActionsDash(selCryptoSubmit, selPredModelSubmit, selCryptoCB, selCurrencyCB, selPredModelCB, graph);
 
         /* create JFrame which will contain defined items - START */
         JFrame mainFrame = new JFrame(DASHBOARD_FRAME_TITLE);
@@ -79,22 +85,37 @@ public class GUI {
         /* create JFrame which will contain defined items - END */
     }
 
-    private XYDataset createDataset( ) {
-        final TimeSeries series = new TimeSeries( "Random Data" );
-        Second current = new Second( );
-        double value = 100.0;
-
-        for (int i = 0; i < 4000; i++) {
-
-            try {
-                value = value + Math.random( ) - 0.5;
-                series.add(current, new Double( value ) );
-                current = ( Second ) current.next( );
-            } catch ( SeriesException e ) {
-                System.err.println("Error adding to series");
+    /**
+     * Assigns actions to parts of GUI.
+     * @param selCryptoSubmit button used for retrieving real data regarding to crypto
+     * @param selPredModelSubmit button used for calculating crypto prediction
+     * @param selCryptoCB combobox used for selecting crypto from list
+     * @param selCurrencyCB combobox used for selecting currency in which values should be displayed
+     * @param selPredModelCB combobox used for selecting prediction model form list
+     * @param graphMan used for manipulation witch charts
+     */
+    public void prepActionsDash(JButton selCryptoSubmit, JButton selPredModelSubmit, JComboBox selCryptoCB, JComboBox selCurrencyCB, JComboBox selPredModelCB, GraphManager graphMan){
+        selCryptoSubmit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                int selectedCryptoIndex = selCryptoCB.getSelectedIndex(); //selected crypto
+                int selectedCurrencyIndex = selCurrencyCB.getSelectedIndex();
+                CryptoDataRetriever cryptoData = new CryptoDataRetriever(SupportedCrypto.values()[selectedCryptoIndex], SupportedCurrency.values()[selectedCurrencyIndex]);
+                performRealDataRefresh(cryptoData, graphMan);
             }
-        }
+        });
+    }
 
-        return new TimeSeriesCollection(series);
+    /**
+     * Updates data in chart with newly retrieved real values from coingecko.
+     * @param cryptoData instance of CryptoDataRetriever which is used for retrieving crypto data
+     * @param graphMan used for manipulation witch charts
+     */
+    public void performRealDataRefresh(CryptoDataRetriever cryptoData, GraphManager graphMan){
+        cryptoData.refreshHistoricalData();
+        ArrayList<Long> cryptoDates = cryptoData.getDates();
+        ArrayList<Double> cryptoPrices = cryptoData.getPrices();
+        System.out.println("Size is: " + cryptoPrices.size());
+        graphMan.updateRealData(cryptoDates, cryptoPrices);
     }
 }

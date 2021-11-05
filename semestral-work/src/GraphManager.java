@@ -16,31 +16,35 @@ public class GraphManager {
 
     /* constructor values - START */
     private String graphTitle; //title of the chart
-    private ArrayList<Long> dates; //contains unix timestamps (index corresponds prices)
-    private ArrayList<Double> prices; //contains prices (index corresponds with dates)
     /* constructor values - END */
 
     /**
      * Constructor takes reference to values (time + price) which should be displayed within the chart (XYDataset object) + title of the chart.
      * Also inits chart object which is modified later on.
-     * @param dates unix timestamps (index corresponds prices)
-     * @param prices prices (index corresponds with dates)
      * @param graphTitle title of the chart
      */
-    public GraphManager(ArrayList<Long> dates, ArrayList<Double> prices, String graphTitle){
+    public GraphManager(String graphTitle){
         this.graphTitle = graphTitle;
-        this.dates = dates;
-        this.prices = prices;
-
-        prepDataset();
         this.createdGraph = createGraph(); //prepare chart
+    }
+
+    /**
+     * Updates real data within the chart according to given data.
+     * @param dates unix timestamps to be visualised (index corresponds prices)
+     * @param prices prices to be visualised (index corresponds with dates)
+     */
+    public void updateRealData(ArrayList<Long> dates, ArrayList<Double> prices){
+        System.out.println("updating");
+        XYSeriesCollection dataset = prepDataset(dates, prices);
+        createdGraph.getXYPlot().setDataset(dataset);
+        createdGraph.getXYPlot().setDataset(createdGraph.getXYPlot().getDataset());
     }
 
     /**
      * Prepares XYDataset dataset from values contained in ArrayList<Long> dates + ArrayList<Double> prices. Dataset can be used in chart later on.
      * @return dataset with dates + prices values
      */
-    private void prepDataset(){
+    private XYSeriesCollection prepDataset(ArrayList<Long> dates, ArrayList<Double> prices){
         dataset = new XYSeriesCollection();
         XYSeries datePriceSeries = new XYSeries("Data");
 
@@ -49,6 +53,7 @@ public class GraphManager {
         }
 
         dataset.addSeries(datePriceSeries);
+        return dataset;
     }
 
     /**
@@ -60,7 +65,7 @@ public class GraphManager {
                 graphTitle,
                 null,
                 null,
-                dataset,
+                null,
                 false,
                 false,
                 false);
