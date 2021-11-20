@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="vss_benchmark:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/vss_benchmark_jar</output-path>
+    <root id="archive" name="vss_benchmark.jar">
+      <element id="module-output" name="vss_benchmark" />
+    </root>
+  </artifact>
+</component>
